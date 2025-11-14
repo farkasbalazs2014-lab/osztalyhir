@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Híroldal bejelentkezéssel</title>
+  <style>
+    body { font-family: Arial; margin: 20px; background: #f7f7f9; }
+    .hidden { display: none; }
+    .card { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; box-shadow: 0 0 5px #ccc; }
+    input, textarea, button { margin: 5px 0; padding: 8px; width: 100%; }
+    button { background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+
+<h1>Híroldal</h1>
+
+<div id="loginPage" class="card">
+  <h2>Bejelentkezés</h2>
+  <input id="username" placeholder="Felhasználónév">
+  <input id="password" type="password" placeholder="Jelszó">
+  <button onclick="login()">Belépés</button>
+</div>
+
+<div id="mainPage" class="hidden">
+  <h2>Üdv, <span id="userInfo"></span>!</h2>
+  <button onclick="logout()">Kilépés</button>
+
+  <div id="newsSection">
+    <h3>Új hír közzététele</h3>
+    <input id="newsTitle" placeholder="Cím">
+    <textarea id="newsContent" placeholder="Tartalom"></textarea>
+    <button onclick="addNews()">Közzététel</button>
+  </div>
+
+  <h3>Hírek</h3>
+  <div id="newsList"></div>
+
+  <div id="adminSection" class="hidden">
+    <h3>Adminisztrátor menü</h3>
+
+    <!-- Hírek törlése -->
+    <h4>Hírek kezelése</h4>
+    <div id="adminNewsList"></div>
+
+    <!-- A hét szava -->
+    <h4>A hét szava frissítése</h4>
+    <input id="wordInput" placeholder="Szó">
+    <textarea id="wordDesc" placeholder="Leírás"></textarea>
+    <button onclick="updateWord()">Mentés</button>
+    <div id="weeklyWordBox"></div>
+
+    <!-- Admin közlemény -->
+    <h4>Admin közlemény</h4>
+    <textarea id="adminMsg" placeholder="Közlemény"></textarea>
+    <button onclick="postAdminMsg()">Közzététel</button>
+    <div id="adminMessageBox"></div>
+  </div>
+</div>
+
+<script>
+  let currentUser = null;
+  let news = [];
+  let weeklyWord = { word: "Kezdet", description: "Az első bejegyzés." };
+  let adminMessage = "";
+
+  function login() {
+    const u = document.getElementById('username').value;
+    const p = document.getElementById('password').value;
+
+    if (p === "gla123") {
+      currentUser = u || "Felhasználó";
+      document.getElementById('userInfo').innerText = currentUser;
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('mainPage').classList.remove('hidden');
+      renderNews();
+    } else if (p === "Balazs55") {
+      currentUser = u || "Adminisztrátor";
+      document.getElementById('userInfo').innerText = currentUser;
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('mainPage').classList.remove('hidden');
+      document.getElementById('adminSection').classList.remove('hidden');
+      renderNews();
+      renderWord();
+    } else {
+      alert("Hibás jelszó!");
+    }
+  }
+
+  function logout() {
+    currentUser = null;
+    document.getElementById('mainPage').classList.add('hidden');
+    document.getElementById('loginPage').classList.remove('hidden');
+  }
+
+  function addNews() {
+    const title = document.getElementById('newsTitle').value;
+    const content = document.getElementById('newsContent').value;
+    if (title && content) {
+      news.unshift({ title, content, author: currentUser, date: new Date().toLocaleString() });
+      document.getElementById('newsTitle').value = '';
+      document.getElementById('newsContent').value = '';
+      renderNews();
+    } else {
+      alert("Cím és tartalom kötelező!");
+    }
+  }
+
+  function renderNews() {
+    const list = document.getElementById('newsList');
+    list.innerHTML = '';
+    if (news.length === 0) {
+      list.innerHTML = "<p>Nincs még hír.</p>";
+    } else {
+      news.forEach((n, i) => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `<h4>${n.title}</h4><p>${n.content}</p><small>${n.author} • ${n.date}</small>`;
+        list.appendChild(div);
+      });
+    }
+
+    // Admin nézet: hírek törlése
+    const adminList = document.getElementById('adminNewsList');
+    if (adminList) {
+      adminList.innerHTML = '';
+      news.forEach((n, i) => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `<h4>${n.title}</h4><button onclick="deleteNews(${i})">Törlés</button>`;
+        adminList.appendChild(div);
+      });
+    }
+  }
+
+  function deleteNews(index) {
+    news.splice(index, 1);
+    renderNews();
+  }
+
+  function updateWord() {
+    const w = document.getElementById('wordInput').value;
+    const d = document.getElementById('wordDesc').value;
+    if (w) {
+      weeklyWord = { word: w, description: d };
+      renderWord();
+      alert("A hét szava frissítve!");
+    }
+  }
+
+  function renderWord() {
+    document.getElementById('weeklyWordBox').innerHTML =
+      `<div class="card"><h4>${weeklyWord.word}</h4><p>${weeklyWord.description}</p></div>`;
+  }
+
+  function postAdminMsg() {
+    adminMessage = document.getElementById('adminMsg').value;
+    document.getElementById('adminMessageBox').innerHTML =
+      `<div class="card"><strong>Közlemény:</strong> ${adminMessage}</div>`;
+  }
+</script>
+
+</body>
+</html>
